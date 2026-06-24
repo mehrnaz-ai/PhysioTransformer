@@ -1,0 +1,26 @@
+# PhysioTransformer — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core deep learning
+torch==2.0.1
+torchvision==0.15.2
+
+# Data processing
+numpy==1.24.3
+pandas==2.0.3
+openpyxl==3.1.2          # for reading .xlsx files
+scikit-learn==1.4.0
+
+# Gradient boosting baseline
+xgboost==1.7.6
+
+# Statistics
+scipy==1.12.0
+pingouin==0.5.4           # for ICC computation
+
+# Visualization
+matplotlib==3.7.2
+seaborn==0.12.2
+
+# Utilities
+tqdm==4.66.1
