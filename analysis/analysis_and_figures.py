@@ -119,9 +119,9 @@ def set_pub_style():
 set_pub_style()
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 1 — PREDICTION COLLECTION
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 @torch.no_grad()
 def collect_predictions(model, test_loader, fold):
@@ -196,9 +196,9 @@ def load_all_folds(model_class, ckpt_pattern, dataset, groups):
     return all_rows
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 2 — STATISTICAL UTILITIES
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 def bootstrap_ci(values, B=2000, alpha=0.05, seed=42):
     """Bootstrap CI for the mean of `values`."""
@@ -289,9 +289,9 @@ def print_full_stats(df):
               f"{r['lt_r2']:>7.3f}")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 3 — FIGURE 1: ABLATION COMPARISON
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 def fig_ablation():
     models  = list(ABLATION.keys())
@@ -349,9 +349,9 @@ def fig_ablation():
     print(f"✓  fig1_ablation.pdf")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 4 — FIGURE 2: PREDICTED vs TRUE SCATTER
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 def fig_pred_vs_true(df):
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -395,9 +395,9 @@ def fig_pred_vs_true(df):
     print(f"✓  fig2_pred_vs_true.pdf")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 5 — FIGURE 3: BLAND-ALTMAN
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 def fig_bland_altman(df):
     fig, ax = plt.subplots(figsize=(7, 5))
@@ -455,9 +455,9 @@ def fig_bland_altman(df):
     return bias, sd, loa_lo, loa_hi
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 6 — FIGURE 4: ERROR BY SPORT
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 def fig_error_by_sport(df):
     sports  = [s for s in ["running", "cycling", "rowing", "kayak"]
@@ -501,9 +501,9 @@ def fig_error_by_sport(df):
     print(f"✓  fig4_error_by_sport.pdf")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 7 — FIGURE 5: REPRESENTATIVE LACTATE CURVES
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 def fig_lactate_curves(rows, df):
     """4-panel: best case, worst case, one per rare sport, highest uncertainty."""
@@ -579,9 +579,9 @@ def fig_lactate_curves(rows, df):
     print(f"✓  fig5_lactate_curves.pdf")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 8 — FIGURE 6: ATTENTION WEIGHTS
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 @torch.no_grad()
 def extract_pooling_weights(model, X_np, L, sport_idx):
@@ -689,9 +689,9 @@ def fig_attention_weights(df, dataset, groups):
     print(f"✓  fig6_attention_weights.pdf")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # SECTION 9 — FIGURE 7: UNCERTAINTY CALIBRATION
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 def fig_uncertainty_calibration(df):
     lt_std = df["lt_std_bpm"].values
@@ -754,9 +754,9 @@ def fig_uncertainty_calibration(df):
     print(f"✓  fig7_uncertainty_calibration.pdf")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+
 # MAIN
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 if __name__ == "__main__":
 

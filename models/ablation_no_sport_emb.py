@@ -1,27 +1,4 @@
-"""
-ablation_no_sport_emb.py — PhysioTransformerNoEmb  (Ablation A: No Sport Embedding)
 
-Ablation target:
-  Remove the sport embedding entirely so the model receives NO sport-specific
-  conditioning signal. All other components are identical to model_full.py.
-  This isolates the contribution of the sport embedding to LT accuracy.
-
-FIXES vs. without_emb.py:
-  [A1] CRITICAL BUG FIXED: inp was Linear(input_dim + 16, 256) but the forward
-       pass did not concatenate any embedding → shape mismatch at runtime crash.
-       Corrected to Linear(input_dim, d_model) with no embedding concat.
-  [A2] d_model set to 128 (was 256) so capacity is IDENTICAL to model_full.py.
-       The original difference made any performance delta uninterpretable.
-  [A3] sport parameter is kept in forward() signature for API compatibility
-       with shared training code, but is explicitly NOT used inside the model.
-  [A4–A9] All fixes F1–F9 from model_full.py are applied identically.
-
-Fair comparison guarantee:
-  ✓ Same input_dim (14)         ✓ Same d_model / n_heads / n_layers
-  ✓ Same feature engineering    ✓ Same GroupKFold splits
-  ✓ Same loss_fn (NLL)          ✓ Same training hyperparameters
-  ✗ Sport embedding REMOVED     ✓ Everything else identical
-"""
 
 import os
 import re
@@ -38,9 +15,9 @@ from sklearn.model_selection import GroupKFold
 
 warnings.filterwarnings("ignore")
 
-# ================================================================
+
 # CONFIG
-# ================================================================
+
 DEVICE       = "cuda" if torch.cuda.is_available() else "cpu"
 SEED         = 42
 torch.manual_seed(SEED)
@@ -53,9 +30,9 @@ LR           = 3e-4
 MAX_LR       = 1e-3
 WEIGHT_DECAY = 1e-4
 
-# ================================================================
+
 # SPORT MAP
-# ================================================================
+
 SPORT_TO_IDX = {
     "running": 0, "cycling": 1, "rowing": 2, "kayak": 3, "unknown": 4
 }
@@ -65,9 +42,9 @@ SPORT_POWER_MAX = {
     "running": 22.0, "cycling": 450.0, "rowing": 500.0, "kayak": 300.0
 }
 
-# ================================================================
+
 # HELPERS
-# ================================================================
+
 def safe_float(x):
     try:
         if pd.isna(x):
@@ -95,9 +72,9 @@ def extract_extra(sheet3):
     return hrmax, hr_2mmol
 
 
-# ================================================================
+
 # DATASET  (identical to model_full.py)
-# ================================================================
+
 class LactateDataset(Dataset):
 
     def __init__(self, root):
@@ -235,9 +212,9 @@ class LactateDataset(Dataset):
         )
 
 
-# ================================================================
+
 # COLLATE
-# ================================================================
+
 def collate_fn(batch):
     batch = [b for b in batch if b is not None]
     X, y, lt, hrmax, sport, athlete = zip(*batch)
@@ -253,9 +230,9 @@ def collate_fn(batch):
     )
 
 
-# ================================================================
+
 # POSITIONAL ENCODING
-# ================================================================
+
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, max_len: int = 1000):
         super().__init__()
@@ -272,13 +249,9 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:, : x.size(1)]
 
 
-# ================================================================
-# MODEL — Ablation A: No Sport Embedding
-#
-#  [FIX A1] inp = Linear(input_dim, d_model)  — NOT input_dim+16
-#  [FIX A2] d_model = 128                     — NOT 256
-#  [FIX A3] sport arg accepted but NOT used inside forward()
-# ================================================================
+
+
+
 class PhysioTransformerNoEmb(nn.Module):
     def __init__(
         self,
@@ -332,7 +305,7 @@ class PhysioTransformerNoEmb(nn.Module):
             nn.Linear(64, 32), nn.GELU(), nn.Linear(32, 1)
         )
 
-    # ----------------------------------------------------------
+
     def forward(self, x, L, sport):
         # [FIX A3] sport is intentionally ignored — this is the ablation
         B, T, _ = x.shape
@@ -355,9 +328,9 @@ class PhysioTransformerNoEmb(nn.Module):
         return curve, lt_pred, logvar
 
 
-# ================================================================
+
 # LOSS  (identical to model_full.py)
-# ================================================================
+
 def loss_fn(curve, y, lt_pred, lt_true, logvar, L):
     T    = curve.size(1)
     mask = (torch.arange(T, device=curve.device)[None, :] < L[:, None])
@@ -373,9 +346,9 @@ def loss_fn(curve, y, lt_pred, lt_true, logvar, L):
     return curve_loss + 0.5 * lt_nll
 
 
-# ================================================================
+
 # EVALUATE  (identical to model_full.py)
-# ================================================================
+
 @torch.no_grad()
 def evaluate(model, loader):
     model.eval()
@@ -418,9 +391,9 @@ def evaluate(model, loader):
     return r2_curve, mae, rmse, r2_lt
 
 
-# ================================================================
+
 # MAIN
-# ================================================================
+
 if __name__ == "__main__":
     ds        = LactateDataset("data")
     groups    = [ds[i][-1] for i in range(len(ds))]

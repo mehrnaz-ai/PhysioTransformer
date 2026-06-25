@@ -1,22 +1,4 @@
-"""
-loso_no_kayak.py — Sensitivity Analysis: LOSO without Kayak
 
-Trains on 2 sports, tests on held-out 1 sport (running / cycling / rowing only).
-Compares to full LOSO results to show whether kayak was pulling down performance.
-
-Run: python loso_no_kayak.py
-Output: loso_no_kayak_results.json
-
-Expected result:
-  If LOSO improves for running/cycling/rowing without kayak:
-    → Domain shift is driven by kayak data poisoning the encoder
-    → Argument: "removing the small, domain-distant kayak sample improves
-      cross-sport transfer among aerobic-endurance sports"
-  If LOSO stays the same:
-    → Domain shift is structural (sport-specific physiology), not sample-size artifact
-    → Argument: "kayak removal does not improve transfer; shift reflects
-      fundamental physiological differences between sports"
-"""
 
 import os, sys, json, warnings
 import numpy as np
@@ -34,8 +16,7 @@ from loso_validation import (
 torch.manual_seed(SEED)
 np.random.seed(SEED)
 
-# ── PREVIOUS LOSO RESULTS (from loso_results.json) ──────────────────────────
-# Load for comparison
+
 try:
     with open("loso_results.json") as f:
         prev_loso = json.load(f)
@@ -46,15 +27,15 @@ except FileNotFoundError:
         "rowing":  {"mae": 7.59, "rmse":  9.42, "r2": 0.243, "n": 209},
     }
 
-# ── MAIN ─────────────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
 
     print("Loading dataset …")
     ds = LactateDataset("data")
     input_dim = ds[0][0].shape[1]
 
-    # EXCLUDE kayak entirely
-    kayak_sport_id = 3  # from SPORT_TO_IDX
+    
+    kayak_sport_id = 3  
     no_kayak_idx = [
         i for i in range(len(ds))
         if int(ds[i][4]) != kayak_sport_id
@@ -124,7 +105,7 @@ if __name__ == "__main__":
         }
         print(f"\n  Final: MAE={mae:.2f} bpm, RMSE={rmse:.2f} bpm, R²={r2:.3f}")
 
-    # ── COMPARISON TABLE ────────────────────────────────────────────────────
+    
     print(f"\n{'='*70}")
     print("SENSITIVITY ANALYSIS: LOSO With vs Without Kayak in Training")
     print(f"{'='*70}\n")
@@ -145,7 +126,7 @@ if __name__ == "__main__":
 
     print(f"\nIn-distribution (5-fold CV): 5.56 bpm (reference)\n")
 
-    # ── PAPER LANGUAGE ──────────────────────────────────────────────────────
+
     print(f"{'='*70}")
     print("SUGGESTED PAPER TEXT (add to Section 4.3 or Limitations):")
     print(f"{'='*70}\n")
@@ -186,7 +167,7 @@ if __name__ == "__main__":
             nk   = results_no_kayak[sport]["mae"]
             print(f"  {sport}: {full:.2f} → {nk:.2f} bpm (Δ={nk-full:+.2f})")
 
-    # ── SAVE ────────────────────────────────────────────────────────────────
+    
     output = {
         "note": "LOSO sensitivity analysis — kayak excluded from training",
         "in_distribution_mae": 5.56,

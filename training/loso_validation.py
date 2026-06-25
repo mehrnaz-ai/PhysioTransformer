@@ -1,15 +1,9 @@
-"""
-loso_validation.py — Leave-One-Sport-Out Cross-Sport Generalization
 
-Train on 3 sports, test on held-out sport. Repeat for each sport.
-Critical for validating "multi-sport" claims.
-"""
 
 import os
 import sys
 import warnings
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import torch
@@ -28,9 +22,6 @@ from model_full import (
 torch.manual_seed(SEED)
 np.random.seed(SEED)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# LOSO EVALUATION
-# ══════════════════════════════════════════════════════════════════════════════
 
 @torch.no_grad()
 def evaluate_loso(model, loader):

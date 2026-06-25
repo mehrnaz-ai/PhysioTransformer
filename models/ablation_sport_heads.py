@@ -1,33 +1,4 @@
-"""
-ablation_sport_heads.py — PhysioTransformerSportHeads  (Ablation F: Sport-Specific LT Heads)
 
-Ablation target:
-  Replace the single shared ordinal LT head with one dedicated head per sport.
-  All other components are identical to model_full.py.
-  This tests whether sport-conditioned LT decoding outperforms a shared decoder
-  even when the encoder already receives sport context via the embedding.
-
-FIXES vs. without_heads.py:
-  [B1] REAL ABLATION: without_heads.py used the same single lt_bins head as
-       model_full.py — no architectural difference existed. This file implements
-       a genuine per-sport head (one nn.Sequential per sport label) so the
-       ablation is meaningful.
-  [B2] d_model = 128 (was 256 in without_heads.py) — capacity matched to
-       model_full.py so any performance delta reflects the head design only.
-  [B3–B9] All fixes F1–F9 from model_full.py applied identically.
-
-Design note on per-sport inference:
-  The batch loop (for i in range(B): self.lt_heads[sport[i]]) is simple and
-  correct. For large-batch production inference, vectorise using scatter / index
-  select — the loop version is clear enough for research code.
-
-Fair comparison guarantee:
-  ✓ Same input_dim (14)         ✓ Same d_model / n_heads / n_layers
-  ✓ Same sport embedding        ✓ Same attention pooling
-  ✓ Same feature engineering    ✓ Same GroupKFold splits
-  ✓ Same loss_fn (NLL)          ✓ Same training hyperparameters
-  ✗ Shared LT head → 5 sport-specific LT heads
-"""
 
 import os
 import re
@@ -44,9 +15,9 @@ from sklearn.model_selection import GroupKFold
 
 warnings.filterwarnings("ignore")
 
-# ================================================================
+
 # CONFIG
-# ================================================================
+
 DEVICE       = "cuda" if torch.cuda.is_available() else "cpu"
 SEED         = 42
 torch.manual_seed(SEED)
@@ -59,9 +30,9 @@ LR           = 3e-4
 MAX_LR       = 1e-3
 WEIGHT_DECAY = 1e-4
 
-# ================================================================
+
 # SPORT MAP
-# ================================================================
+
 SPORT_TO_IDX = {
     "running": 0, "cycling": 1, "rowing": 2, "kayak": 3, "unknown": 4
 }
@@ -71,9 +42,9 @@ SPORT_POWER_MAX = {
     "running": 22.0, "cycling": 450.0, "rowing": 500.0, "kayak": 300.0
 }
 
-# ================================================================
+
 # HELPERS
-# ================================================================
+
 def safe_float(x):
     try:
         if pd.isna(x):
@@ -101,9 +72,9 @@ def extract_extra(sheet3):
     return hrmax, hr_2mmol
 
 
-# ================================================================
+
 # DATASET  (identical to model_full.py)
-# ================================================================
+
 class LactateDataset(Dataset):
 
     def __init__(self, root):
@@ -241,9 +212,9 @@ class LactateDataset(Dataset):
         )
 
 
-# ================================================================
+
 # COLLATE
-# ================================================================
+
 def collate_fn(batch):
     batch = [b for b in batch if b is not None]
     X, y, lt, hrmax, sport, athlete = zip(*batch)
@@ -259,9 +230,9 @@ def collate_fn(batch):
     )
 
 
-# ================================================================
+
 # POSITIONAL ENCODING
-# ================================================================
+
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, max_len: int = 1000):
         super().__init__()
@@ -278,15 +249,9 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:, : x.size(1)]
 
 
-# ================================================================
-# MODEL — Ablation F: Sport-Specific LT Heads
-#
-#  Encoder and pooling are IDENTICAL to model_full.py.
-#  ONLY the LT decoder changes: one head per sport instead of shared.
-#
-#  [FIX B1] True per-sport head — genuine ablation vs. model_full.py
-#  [FIX B2] d_model = 128 — matched to model_full.py
-# ================================================================
+
+
+
 class PhysioTransformerSportHeads(nn.Module):
     def __init__(
         self,
@@ -337,7 +302,7 @@ class PhysioTransformerSportHeads(nn.Module):
             nn.Linear(64, 64), nn.GELU(), nn.Linear(64, 1)
         )
 
-        # [FIX B1] Per-sport LT heads — one ordinal head per sport label
+        # Per-sport LT heads — one ordinal head per sport label
         #          running / cycling / rowing / kayak / unknown → 5 heads
         self.lt_heads = nn.ModuleList([
             nn.Sequential(
@@ -362,7 +327,7 @@ class PhysioTransformerSportHeads(nn.Module):
     def forward(self, x, L, sport):
         B, T, _ = x.shape
 
-        # Sport conditioning via embedding (same as model_full.py)
+
         emb = self.sport_emb(sport).unsqueeze(1).expand(-1, T, -1)
         x   = torch.cat([x, emb], dim=-1)
 
@@ -377,7 +342,7 @@ class PhysioTransformerSportHeads(nn.Module):
 
         curve = self.curve_head(h)
 
-        # [FIX B1] Route each sample through its sport-specific LT head
+
         lt_logits_list = []
         for i in range(B):
             sport_i   = sport[i].item()
@@ -393,9 +358,9 @@ class PhysioTransformerSportHeads(nn.Module):
         return curve, lt_pred, logvar
 
 
-# ================================================================
+
 # LOSS  (identical to model_full.py)
-# ================================================================
+
 def loss_fn(curve, y, lt_pred, lt_true, logvar, L):
     T    = curve.size(1)
     mask = (torch.arange(T, device=curve.device)[None, :] < L[:, None])
@@ -411,9 +376,9 @@ def loss_fn(curve, y, lt_pred, lt_true, logvar, L):
     return curve_loss + 0.5 * lt_nll
 
 
-# ================================================================
+
 # EVALUATE  (identical to model_full.py)
-# ================================================================
+
 @torch.no_grad()
 def evaluate(model, loader):
     model.eval()
@@ -456,9 +421,9 @@ def evaluate(model, loader):
     return r2_curve, mae, rmse, r2_lt
 
 
-# ================================================================
+
 # MAIN
-# ================================================================
+
 if __name__ == "__main__":
     ds        = LactateDataset("data")
     groups    = [ds[i][-1] for i in range(len(ds))]
