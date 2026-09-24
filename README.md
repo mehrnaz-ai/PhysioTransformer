@@ -10,9 +10,8 @@
 
 ## 📄 Paper
 
-> **Eskandari Sani M, Daryanoosh F.**
-> PhysioTransformer: Sport-Aware Transformer Modeling for Non-Invasive Lactate Threshold Estimation Across Multiple Endurance Disciplines.
-> *[Journal Name], 2025.*
+> **EskandariSani M, Daryanoosh F.**
+
 > DOI: [to be added after acceptance]
 
 ---
@@ -258,7 +257,7 @@ If you use PhysioTransformer in your research, please cite:
   title   = {PhysioTransformer: Sport-Aware Transformer Modeling for 
              Non-Invasive Lactate Threshold Estimation Across Multiple 
              Endurance Disciplines},
-  author  = {Eskandari Sani, Mehrnaz and Daryanoosh, Farhad},
+  author  = {Eskandarisani, Mehrnaz and Daryanoosh, Farhad},
   journal = {[Journal Name]},
   year    = {2025},
   doi     = {[to be added]}
@@ -283,9 +282,8 @@ Also cite the original dataset:
 ## 📬 Contact
 
 **Corresponding author:**
-Prof. Farhad Daryanoosh
-Department of Sport Science, Shiraz University, Iran
-✉️ daryanoosh@shirazu.ac.ir
+Mehrnaz Eskandarisani
+Mehrnazeskandarisani1@gmail.com
 
 ---
 
