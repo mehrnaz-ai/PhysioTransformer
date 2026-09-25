@@ -46,7 +46,6 @@ extracted during incremental exercise testing.
 
 ## 📁 Repository Structure
 
-
 PhysioTransformer/
 │
 ├── README.md
@@ -76,7 +75,7 @@ PhysioTransformer/
 │   └── figures/
 │
 └── data/
-└── README.md                  # Instructions to download from Zenodo
+    └── README.md                  # Instructions to download from Zenodo
 
 ---
 
